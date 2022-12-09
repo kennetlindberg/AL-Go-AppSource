@@ -1,0 +1,42 @@
+name: ' Deploy On-Premise'
+
+on:
+  workflow_run:
+    workflows: [ ' CI/CD']
+    types:
+      - completed
+  
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+defaults:
+  run:
+    shell: powershell
+
+jobs:
+  Initialization:
+    runs-on: [ self-hosted ]
+    outputs:
+      settingsJson: ${{ steps.ReadSettings.outputs.SettingsJson }}
+    name: Initialization
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Read settings
+        id: ReadSettings
+        uses: kennetlindberg/AL-Go-Actions/ReadSettings@main
+
+  DeployOnPremise:
+    runs-on: [ self-hosted, local ]
+    needs: [ Initialization ]
+    name: Deploy On-Premise
+    steps:
+      - name: Deploy
+        uses: kennetlindberg/AL-Go-Actions/DeployOnPremise@main
+        with:
+          token: ${{ github.token }}
+          settingsJson: ${{needs.Initialization.outputs.settingsJson }}
