@@ -19,9 +19,9 @@ defaults:
 jobs:
   Initialization:
     runs-on: [ self-hosted ]
-    outputs:
-      settingsJson: ${{ steps.ReadSettings.outputs.SettingsJson }}
     name: Initialization
+    outputs:
+      settings: ${{steps.ReadSettings.outputs.SettingsJson}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -39,4 +39,4 @@ jobs:
         uses: kennetlindberg/AL-Go-Actions/DeployOnPremise@main
         with:
           token: ${{ github.token }}
-          settingsJson: ${{needs.Initialization.outputs.settingsJson }}
+          settingsJson: ${{ needs.Initialization.outputs.settings }}
