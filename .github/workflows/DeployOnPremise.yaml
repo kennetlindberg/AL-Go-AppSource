@@ -18,7 +18,7 @@ defaults:
 
 jobs:
   Initialization:
-    runs-on: [ self-hosted ]
+    runs-on: [ self-hosted, local ]
     name: Initialization
     outputs:
       settings: ${{steps.ReadSettings.outputs.SettingsJson}}
@@ -31,7 +31,7 @@ jobs:
         uses: kennetlindberg/AL-Go-Actions/ReadSettings@main
 
   DeployOnPremise:
-    runs-on: [ self-hosted ]
+    runs-on: [ self-hosted, local ]
     needs: [ Initialization ]
     name: Deploy On-Premise
     steps:
@@ -42,4 +42,3 @@ jobs:
         uses: kennetlindberg/AL-Go-Actions/DeployOnPremise@main
         with:
           token: ${{ github.token }}
-          settingsJson: ${{ needs.Initialization.outputs.settings }}
