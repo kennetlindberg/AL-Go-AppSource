@@ -1,11 +1,11 @@
-name: ' Deploy On-Premise'
+name: 'Deploy On-Premise'
 
 on:
   workflow_run:
     workflows: [ ' CI/CD']
-    types:
-      - completed
-  
+    types: [completed]
+    branches: [main]
+
   workflow_dispatch:
 
 permissions:
@@ -31,10 +31,13 @@ jobs:
         uses: kennetlindberg/AL-Go-Actions/ReadSettings@main
 
   DeployOnPremise:
-    runs-on: [ self-hosted, local ]
+    runs-on: [ self-hosted ]
     needs: [ Initialization ]
     name: Deploy On-Premise
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Deploy
         uses: kennetlindberg/AL-Go-Actions/DeployOnPremise@main
         with:
