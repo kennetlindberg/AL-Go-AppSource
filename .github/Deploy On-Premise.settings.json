@@ -1,5 +1,4 @@
 {
-    "githubrunner":  "self-hosted, local",
     "onPremServerInstance": "test",
     "onPremServerTenant": "default"
 }
