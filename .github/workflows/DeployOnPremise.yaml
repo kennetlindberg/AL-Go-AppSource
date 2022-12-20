@@ -17,22 +17,8 @@ defaults:
     shell: powershell
 
 jobs:
-  Initialization:
-    runs-on: [ self-hosted, local ]
-    name: Initialization
-    outputs:
-      settings: ${{steps.ReadSettings.outputs.SettingsJson}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Read settings
-        id: ReadSettings
-        uses: kennetlindberg/AL-Go-Actions/ReadSettings@main
-
   DeployOnPremise:
     runs-on: [ self-hosted, local ]
-    needs: [ Initialization ]
     name: Deploy On-Premise
     steps:
       - name: Checkout
