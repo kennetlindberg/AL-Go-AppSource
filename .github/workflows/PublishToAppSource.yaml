@@ -12,9 +12,9 @@ on:
         required: false
         default: '*'
       GoLive:
-        description: Promote AppSource App to go live if it passes technical validation? (Y/N)
-        required: false
-        default: 'N'
+        description: Promote AppSource App to go live if it passes technical validation?
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -30,10 +30,16 @@ env:
 
 jobs:
   Initialization:
+    needs: [ ]
     runs-on: [ windows-latest ]
     outputs:
       telemetryScopeJson: ${{ steps.init.outputs.telemetryScopeJson }}
     steps:
+      - name: Dump Workflow Information
+        uses: kennetlindberg/AL-Go-Actions/DumpWorkflowInfo@main
+        with:
+          shell: powershell
+
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -56,32 +62,19 @@ jobs:
         uses: kennetlindberg/AL-Go-Actions/ReadSettings@main
         with:
           shell: powershell
-          parentTelemetryScopeJson: ${{ needs.Initialization.outputs.telemetryScopeJson }}
 
       - name: Read secrets
+        id: ReadSecrets
         uses: kennetlindberg/AL-Go-Actions/ReadSecrets@main
         with:
           shell: powershell
           gitHubSecrets: ${{ toJson(secrets) }}
           getSecrets: 'appSourceContext'
 
-      - name: DeliveryContext
-        id: deliveryContext
-        run: |
-          $errorActionPreference = "Stop"; $ProgressPreference = "SilentlyContinue"; Set-StrictMode -Version 2.0
-          $secrets = $env:Secrets | ConvertFrom-Json
-          if ($secrets.appSourceContext) {
-            $deliveryContext = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($secrets.appSourceContext))
-            Add-Content -Encoding UTF8 -Path $env:GITHUB_OUTPUT -Value "deliveryContext=$deliveryContext"
-          }
-          else {
-            throw "appSourceContext secret is missing"
-          }
-
       - name: Deliver
         uses: kennetlindberg/AL-Go-Actions/Deliver@main
         env:
-          deliveryContext: '${{ steps.deliveryContext.outputs.deliveryContext }}'
+          Secrets: '${{ steps.ReadSecrets.outputs.Secrets }}'
         with:
           shell: powershell
           parentTelemetryScopeJson: ${{ needs.Initialization.outputs.telemetryScopeJson }}
@@ -92,9 +85,9 @@ jobs:
           goLive: ${{ github.event.inputs.goLive }}
 
   PostProcess:
+    needs: [ Initialization, Deliver ]
     if: always()
     runs-on: [ windows-latest ]
-    needs: [ Initialization, Deliver ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
